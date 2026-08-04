@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Character {
+  id              Int              @id @default(autoincrement())
+  name            String
+  xMin            Float
+  xMax            Float
+  yMin            Float
+  yMax            Float
+  imageName       String           @default("waldo-beach-level1")
+  foundCharacters FoundCharacter[]
+}
+
+model Game {
+  id              Int              @id @default(autoincrement())
+  token           String           @unique
+  createdAt       DateTime         @default(now())
+  finishedAt      DateTime?
+  finished        Boolean          @default(false)
+  foundCharacters FoundCharacter[]
+  scores          Score[]
+}
+
+model Score {
+  id         Int      @id @default(autoincrement())
+  gameId     Int
+  playerName String
+  timeMs     Int
+  createdAt  DateTime @default(now())
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+}
+
+model FoundCharacter {
+  id          Int       @id @default(autoincrement())
+  gameId      Int
+  characterId Int
+  foundAt     DateTime  @default(now())
+  game        Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, characterId])
+}
